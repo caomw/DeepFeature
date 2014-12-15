@@ -1,0 +1,219 @@
+name: "DeepFeature"
+input:"data"
+input_dim:1
+input_dim:3
+input_dim:24
+input_dim:24
+layers {
+  name: "conv1"
+  type: CONVOLUTION
+  bottom: "data"
+  top: "conv1"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 96
+    kernel_size: 9
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "slice1"
+  type: SLICE
+  bottom: "conv1"
+  top: "slice1A"
+  top: "slice1B"
+  slice_param {
+    slice_dim:1
+    slice_point:48
+  }
+}
+layers {
+  name: "maxout1"
+  type: ELTWISE
+  bottom: "slice1A"
+  bottom: "slice1B"
+  top: "maxout1"
+  eltwise_param {
+    operation:MAX
+  }
+}
+layers {
+  name: "conv2"
+  type: CONVOLUTION
+  bottom: "maxout1"
+  top: "conv2"
+  blobs_lr: 1
+  blobs_lr: 2
+  convolution_param {
+    num_output: 128
+    kernel_size: 9
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "droupout2"
+  type: DROPOUT
+  bottom: "conv2"
+  top: "conv2"
+  dropout_param {
+    dropout_ratio:0.5
+  }
+}
+layers {
+  name: "slice2"
+  type: SLICE
+  bottom: "conv2"
+  top: "slice2A"
+  top: "slice2B"
+  slice_param {
+    slice_dim:1
+    slice_point:64
+  }
+}
+layers {
+  name: "maxout2"
+  type: ELTWISE
+  bottom: "slice2A"
+  bottom: "slice2B"
+  top: "maxout2"
+  eltwise_param {
+    operation:MAX
+  }
+}
+layers {
+  name: "conv3"
+  type: CONVOLUTION
+  bottom: "maxout2"
+  top: "conv3"
+  convolution_param {
+    num_output: 512
+    kernel_size: 8
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "droupout3"
+  type: DROPOUT
+  bottom: "conv3"
+  top: "conv3"
+  dropout_param {
+    dropout_ratio:0.5
+  }
+}
+layers {
+  name: "slice3"
+  type: SLICE
+  bottom: "conv3"
+  top: "slice3A"
+  top: "slice3B"
+  top: "slice3C"
+  top: "slice3D"
+  slice_param {
+    slice_dim:1
+    slice_point:128
+    slice_point:256
+    slice_point:384
+  }
+}
+layers {
+  name: "maxout3"
+  type: ELTWISE
+  bottom: "slice3A"
+  bottom: "slice3B"
+  bottom: "slice3C"
+  bottom: "slice3D"
+  top: "maxout3"
+  eltwise_param {
+    operation:MAX
+  }
+}
+layers {
+  name: "conv4"
+  type: CONVOLUTION
+  bottom: "maxout3"
+  top: "conv4"
+  blobs_lr:10
+  blobs_lr:20
+  convolution_param {
+    num_output: 144
+    kernel_size: 1
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "droupout4"
+  type: DROPOUT
+  bottom: "conv4"
+  top: "conv4"
+  dropout_param {
+    dropout_ratio:0.5
+  }
+}
+layers {
+  name: "slice4"
+  type: SLICE
+  bottom: "conv4"
+  top: "slice4A"
+  top: "slice4B"
+  top: "slice4C"
+  top: "slice4D"
+  slice_param {
+    slice_dim:1
+    slice_point:36
+    slice_point:72
+    slice_point:108
+  }
+}
+layers {
+  name: "maxout4"
+  type: ELTWISE
+  bottom: "slice4A"
+  bottom: "slice4B"
+  bottom: "slice4C"
+  bottom: "slice4D"
+  top: "maxout4"
+  eltwise_param {
+    operation: MAX
+  }
+}
+layers {
+  name: "loss"
+  type: SOFTMAX
+  bottom: "maxout4"
+  top: "prob"
+}
